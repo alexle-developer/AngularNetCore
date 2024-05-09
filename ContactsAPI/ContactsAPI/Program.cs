@@ -50,14 +50,22 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(x =>
-    {
-        x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
-        x.RoutePrefix = string.Empty;
+    //app.UseSwagger();
+    //app.UseSwaggerUI(x =>
+    //{
+    //    x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
+    //    x.RoutePrefix = string.Empty;
        
-    });
+    //});
 }
+
+app.UseSwagger();
+app.UseSwaggerUI(x =>
+{
+    x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
+    x.RoutePrefix = string.Empty;
+
+});
 
 app.UseHttpsRedirection();
 
