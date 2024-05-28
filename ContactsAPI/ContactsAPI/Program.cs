@@ -17,7 +17,19 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 
+// If we want to use a real database, we can use the following code:
+//      Add services for the database DbContext
+//      Connection String => Server=(localdb)\\MSSQLLocalDB; Database=ContactsDb; Trusted_Connection=True; MultipleActiveResultSets=true
+//      Migration Steps using Nuget Package Manager Console:
+//       1. Add-Migration "InitialMigration"
+//       2. Update-Database
+builder.Services.AddDbContext<ContactsApiDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureDatabaseConnectionString")));
+
+
 builder.Services.AddControllers();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -33,18 +45,7 @@ builder.Services.ConfigureSwaggerGen(setup =>
 });
 
 
-// Add services for the database DbContext
-// Connection String => Server=(localdb)\\MSSQLLocalDB; Database=ContactsDb; Trusted_Connection=True; MultipleActiveResultSets=true
-// we do not need to provide the connection string as we are using in-memory database
-// options.UseInMemoryDatabase("ContactsDb");
-// Migration Steps using Nuget Package Manager Console:
-// 1. Add-Migration "InitialMigration"
-// 2. Update-Database
-builder.Services.AddDbContext<ContactsApiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureDatabaseConnectionString")));
-
-
-
+// Build the application.
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -55,13 +56,18 @@ if (app.Environment.IsDevelopment())
     //{
     //    x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
     //    x.RoutePrefix = string.Empty;
-       
+
     //});
 }
 
 app.UseSwagger();
 app.UseSwaggerUI(x =>
 {
+    // When run on localhost, removed the RoutePrefix swagger
+    //  - http://localhost:7223/index.html
+    //
+    // When run on Azure, removed the RoutePrefix swagger
+    //  - https://contactlistapi.azurewebsites.net/index.html
     x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
     x.RoutePrefix = string.Empty;
 
