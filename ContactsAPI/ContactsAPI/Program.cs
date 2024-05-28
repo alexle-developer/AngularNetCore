@@ -51,6 +51,21 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+
+    /* NOTE: 
+     * Azure URL will NOT work if you place the app.useSwagger() and app.UseSwaggerUI() here 
+     */
+
+    // If we want the "swagger" to be part of the URL for Azure, we need to:
+    //  - move app.UseSwagger() and app.UseSwaggerUI() outside of the if block
+    //  - Comment out the x.SwaggerEndpoint
+    //  - Change the RoutePrefix to "swagger"
+    //  - Publish the app to Azure and run it
+    //  -  local => http://localhost:7223/swagger/index.html
+    //  -  Azure => https://contactlistapi.azurewebsites.net/swagger/index.html
+    // x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
+    // x.RoutePrefix = "swagger";
+
     //app.UseSwagger();
     //app.UseSwaggerUI(x =>
     //{
@@ -63,14 +78,10 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI(x =>
 {
-    // When run on localhost, removed the RoutePrefix swagger
-    //  - http://localhost:7223/index.html
-    //
-    // When run on Azure, removed the RoutePrefix swagger
-    //  - https://contactlistapi.azurewebsites.net/index.html
+    // When run on localhost, http://localhost:7223/index.html
+    // When run on Azure, https://contactlistapi.azurewebsites.net/index.html
     x.SwaggerEndpoint("/swagger/v1/swagger.json", "Contact List API");
     x.RoutePrefix = string.Empty;
-
 });
 
 app.UseHttpsRedirection();
@@ -79,4 +90,27 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Check if there is any pending migration
+// ApplyMigration();
+
 app.Run();
+
+
+
+void ApplyMigration()
+{
+
+    if (app.Environment.IsDevelopment())
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ContactsApiDbContext>();
+            // if pending migration count is greater than 0, then apply migration
+            if (db.Database.GetPendingMigrations().Any())
+            {
+                db.Database.Migrate();
+            }
+
+        }
+    }
+}
